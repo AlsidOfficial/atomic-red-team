@@ -104,3 +104,4 @@ atomic_tests:
       Disconnect-AzureAD
     name: powershell
     elevation_required: true
+    
