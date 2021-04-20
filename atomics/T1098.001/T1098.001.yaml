@@ -7,7 +7,7 @@ atomic_tests:
   description: |
     Add a certificate to an Application through its Service Principal. Certificate will be link to the appdId.
     The certificate can be used to authenticate as the application and benefits from its access.
-    Account with high Azure privilege is needed, such as Global Administrator or Application Administrator. The account authentication must be without MFA.
+    An account with high-enough Azure AD privileges is needed, such as Global Administrator or Application Administrator. The account authentication must be without MFA.
   supported_platforms:
   - windows
   input_arguments:
