@@ -57,7 +57,6 @@ atomic_tests:
 
       $tenant=Get-AzureADTenantDetail
       Connect-AzureAD -TenantId $tenant.ObjectId -ApplicationId $sp.AppId -CertificateThumbprint $thumb
-      Get-AzureADCurrentSessionInfo
 
     cleanup_command: |
       Disconnect-AzureAD
@@ -120,7 +119,6 @@ atomic_tests:
 
       $tenant=Get-AzureADTenantDetail
       Connect-AzureAD -TenantId $tenant.ObjectId -ApplicationId $app.AppId -CertificateThumbprint $thumb
-      Get-AzureADCurrentSessionInfo
 
     cleanup_command: |
       Disconnect-AzureAD
