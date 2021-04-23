@@ -99,7 +99,7 @@ atomic_tests:
     prereq_command: |
       if (Get-Module AzureAD) {exit 0} else {exit 1}
     get_prereq_command: |
-      Install-Module -Name AzureAD -Force   
+      Install-Module -Name AzureAD -Force
   executor:
     command: |
       Import-Module -Name AzureAD
@@ -119,7 +119,7 @@ atomic_tests:
       New-AzureADApplicationKeyCredential -ObjectId $app.ObjectId -Type AsymmetricX509Cert -Usage Verify -Value $keyValue -EndDate $notAfter
 
       $tenant=Get-AzureADTenantDetail
-      Connect-AzureAD -TenantId $tenant.ObjectId -ApplicationId  $app.AppId -CertificateThumbprint $thumb
+      Connect-AzureAD -TenantId $tenant.ObjectId -ApplicationId $app.AppId -CertificateThumbprint $thumb
       Get-AzureADCurrentSessionInfo
 
     cleanup_command: |
