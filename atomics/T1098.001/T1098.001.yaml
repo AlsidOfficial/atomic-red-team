@@ -109,7 +109,7 @@ atomic_tests:
 
       $app = Get-AzureADApplication -Searchstring "#{application}"
       $notAfter = (Get-Date).AddDays(1)  
-      $thumb = (New-SelfSignedCertificate -DnsName "atomicredteam.example.com" -CertStoreLocation "cert:\CurrentUser\My"  -KeyExportPolicy Exportable -Provider "Microsoft Enhanced RSA and AES Cryptographic Provider" -NotAfter $notAfter).Thumbprint
+      $thumb = (New-SelfSignedCertificate -DnsName "atomicredteam.example.com" -CertStoreLocation "cert:\CurrentUser\My" -KeyExportPolicy Exportable -Provider "Microsoft Enhanced RSA and AES Cryptographic Provider" -NotAfter $notAfter).Thumbprint
       $pwd = ConvertTo-SecureString -String "#{certificate_password}" -Force -AsPlainText
       Export-PfxCertificate -cert "cert:\CurrentUser\my\$thumb" -FilePath "#{path_to_cert}\#{application}.pfx" -Password $pwd
 
