@@ -59,7 +59,7 @@ atomic_tests:
 
       New-AzureADServicePrincipalKeyCredential -ObjectId $sp.ObjectId -Type AsymmetricX509Cert -Usage Verify -Value $keyValue -EndDate $credNotAfter
 
-      Start-Sleep -s 15
+      Start-Sleep -s 30
       $tenant=Get-AzureADTenantDetail
       Connect-AzureAD -TenantId $tenant.ObjectId -ApplicationId $sp.AppId -CertificateThumbprint $thumb
 
@@ -125,7 +125,7 @@ atomic_tests:
 
       New-AzureADApplicationKeyCredential -ObjectId $app.ObjectId -Type AsymmetricX509Cert -Usage Verify -Value $keyValue -EndDate $credNotAfter
 
-      Start-Sleep -s 15
+      Start-Sleep -s 30
       $tenant=Get-AzureADTenantDetail
       Connect-AzureAD -TenantId $tenant.ObjectId -ApplicationId $app.AppId -CertificateThumbprint $thumb
 
