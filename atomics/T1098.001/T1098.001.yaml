@@ -88,7 +88,7 @@ atomic_tests:
     application:
       description: Targeted Application 
       type: String
-      default: "MonCul"
+      default: "SuperApp"
     certificate_password:
       description: Password of the new certificate
       type: string
