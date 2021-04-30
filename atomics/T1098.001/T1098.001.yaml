@@ -13,7 +13,7 @@ atomic_tests:
     username:
       description: Azure AD username
       type: String
-      default: "jonh@contoso.com"
+      default: jonh@contoso.com
     password:
       description: Azure AD password
       type: String
@@ -21,7 +21,7 @@ atomic_tests:
     service_principal_name:
       description: Name of the targeted service principal
       type: String
-      default: "SuperSP"
+      default: SuperSP
     certificate_password:
       description: Password of the new certificate
       type: string
@@ -95,7 +95,7 @@ atomic_tests:
     username:
       description: Azure AD username
       type: String
-      default: "jonh@contoso.com"
+      default: jonh@contoso.com
     password:
       description: Azure AD password
       type: String
@@ -103,7 +103,7 @@ atomic_tests:
     application_name:
       description: Name of the targeted application 
       type: String
-      default: "SuperApp"
+      default: SuperApp
     certificate_password:
       description: Password of the new certificate
       type: string
