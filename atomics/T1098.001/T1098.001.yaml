@@ -152,7 +152,7 @@ atomic_tests:
       Connect-AzureAD -Credential $Credential
 
       $app = Get-AzureADApplication -Searchstring "#{application_name}"
-      $credz = Get-AzureADApplicationCredential -ObjectId $app.ObjectId
+      $credz = Get-AzureADApplicationKeyCredential -ObjectId $app.ObjectId
       foreach ($cred in $credz) {
         if ([System.Text.Encoding]::ASCII.GetString($cred.CustomKeyIdentifier) -eq "AtomicTest") {
           Remove-AzureADApplicationKeyCredential -ObjectId $app.ObjectId -KeyId $cred.KeyId
