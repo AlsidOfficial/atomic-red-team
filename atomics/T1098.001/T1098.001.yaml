@@ -63,6 +63,7 @@ atomic_tests:
       $tenant=Get-AzureADTenantDetail
       $tmp = Connect-AzureAD -TenantId $tenant.ObjectId -ApplicationId $sp.AppId -CertificateThumbprint $thumb
       Write-Host ($tmp | Format-Table | Out-String)
+      Write-Host "End of Application Hijacking"
 
     cleanup_command: |
       Import-Module -Name AzureAD
@@ -144,6 +145,7 @@ atomic_tests:
       $tenant=Get-AzureADTenantDetail
       $tmp = Connect-AzureAD -TenantId $tenant.ObjectId -ApplicationId $app.AppId -CertificateThumbprint $thumb
       Write-Host ($tmp | Format-Table | Out-String)
+      Write-Host "End of Application Hijacking"
 
     cleanup_command: |
       Import-Module -Name AzureAD
