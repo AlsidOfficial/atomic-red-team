@@ -91,7 +91,7 @@ atomic_tests:
     username:
       description: Account to bruteforce
       type: String
-      default: bruce.wayne@aad2016.onmicrosoft.com
+      default: bruce.wayne@contoso.com
     input_file_passwords:
       description: Path to a file containing a list of passwords we will attempt to brute force with.
       type: Path
@@ -120,7 +120,7 @@ atomic_tests:
           Write-Host " [!] #{username}:${line} are valid credentials! `r`n"
           break
         } catch {
-          Write-Host " [-] ${line}: invalid credentials `r`n"
+          Write-Host " [-] #{username}:${line} invalid credentials `r`n"
         }
       }
       Write-Host "End of bruteforce `r`n"
