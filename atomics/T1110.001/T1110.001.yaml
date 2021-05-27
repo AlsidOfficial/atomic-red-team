@@ -121,7 +121,7 @@ atomic_tests:
           Write-Host " [!] #{username}:${password} are valid credentials!`r`n"
           break
         } catch {
-          Write-Host " [-] #{username}:${password}} invalid credentials.`r`n"
+          Write-Host " [-] #{username}:${password} invalid credentials.`r`n"
         }
       }
       Write-Host "End of bruteforce"
