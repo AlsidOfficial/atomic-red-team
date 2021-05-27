@@ -91,11 +91,12 @@ atomic_tests:
     username:
       description: Account to bruteforce
       type: String
-      default: bryan@aad2016.onmicrosoft.com
+      default: bruce.wayne@aad2016.onmicrosoft.com
     input_file_passwords:
       description: Path to a file containing a list of passwords we will attempt to brute force with.
       type: Path
       default: "~\\passwords.txt"
+  dependency_executor_name: powershell
   dependencies:
   - description: |
       AzureAD module must be installed.
