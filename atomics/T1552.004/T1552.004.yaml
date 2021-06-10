@@ -101,9 +101,9 @@ atomic_tests:
   executor:
     command: |
       Import-Module AADInternals -Force
-      Export-AADIntADFSCertificates -verbose
+      Export-AADIntADFSCertificates
       Get-ChildItem | Where-Object {$_ -like "ADFS*"}
-      Write-Host "Certificates retrieved successfully"
+      Write-Host "`nCertificates retrieved successfully"
     cleanup_command: |
       Remove-Item -Path ".\ADFS_encryption.pfx"
       Remove-Item -Path ".\ADFS_signing.pfx"
@@ -142,12 +142,12 @@ atomic_tests:
       Install-Module -Name AADInternals -Force
   executor:
     command: |
-      Import-Module ActiveDirectory -Force
-      Import-Module AADInternals -Force
+      Import-Module ActiveDirectory -Force 
+      Import-Module AADInternals -Force | Out-Null
 
       #Get Configuration
       $dcServerName = (Get-ADDomainController).HostName
-      $svc = Get-ADObject -filter * -Properties objectguid,objectsid | Where-Object name -eq #{adfs_service_account_name}
+      $svc = Get-ADObject -filter * -Properties objectguid,objectsid | Where-Object name -eq "#{adfs_service_account_name}"
       $PWord = ConvertTo-SecureString -String "#{replication_password}" -AsPlainText -Force
       $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList #{replication_user}, $PWord
       # use DCSync to fetch the ADFS service account's NT hash
@@ -176,7 +176,7 @@ atomic_tests:
       Export-AADIntADFSCertificates -Configuration $ADFSConfig -Key $key
 
       Get-ChildItem | Where-Object {$_ -like "ADFS*"}
-      Write-Host "Certificates retrieved successfully"
+      Write-Host "`nCertificates retrieved successfully"
     cleanup_command: |
       Remove-Item -Path ".\ADFS_encryption.pfx"
       Remove-Item -Path ".\ADFS_signing.pfx"
