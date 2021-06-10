@@ -115,23 +115,23 @@ atomic_tests:
   input_arguments:
     adfs_service_account_name:
       description: Name of the ADFS service account
-      type: string
+      type: String
       default: "adfs_svc"
     replication_user:
       description: Username with replication rights. It can be the Domain Admin running the script
-      type: string
+      type: String
       default: "Administrator"
     replication_password:
       description: Password of replication_username
-      type: string
+      type: String
       default: "ReallyStrongPassword"
     dc_server_name:
       description: Name of the DC server
-      type: string
+      type: String
       default: "DC01.contoso.com"
     adfs_server_name:
       description: Name of the ADFS server
-      type: string
+      type: String
       default: "sts.contoso.com"
   dependency_executor_name: powershell
   dependencies:
