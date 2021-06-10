@@ -172,7 +172,7 @@ atomic_tests:
       $aduser=$ADSearch.FindOne() 
       $key=[byte[]]$aduser.Properties["thumbnailphoto"][0] 
 
-      # Decrypt certificates
+      # Get encrypted certificates from configuration and decrypt them
       Export-AADIntADFSCertificates -Configuration $ADFSConfig -Key $key
 
       Get-ChildItem | Where-Object {$_ -like "ADFS*"}
