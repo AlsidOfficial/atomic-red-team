@@ -13,7 +13,7 @@ atomic_tests:
       type: Path
       default: '.\ADFS_signing.pfx'
     immutable_id:
-      description: ImmutableId of the targetted user
+      description: ImmutableId of the targeted user
       type: String
       default: "aehgdqBTZV50DKQZmNJ8mg=="
     issuer_uri:
