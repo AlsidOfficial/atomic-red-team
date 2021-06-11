@@ -25,7 +25,7 @@ atomic_tests:
   dependency_executor_name: powershell
   dependencies:
   - description: |
-        AADInternals module must be installed.
+      AADInternals module must be installed.
     prereq_command: |
       if (Get-Module AADInternals) {exit 0} else {exit 1}
     get_prereq_command: |
