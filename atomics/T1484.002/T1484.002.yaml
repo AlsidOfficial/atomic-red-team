@@ -5,7 +5,7 @@ atomic_tests:
   auto_generated_guid: 8906c5d0-3ee5-4f63-897a-f6cafd3fdbb7
   description: |
     Add a new federation to Azure AD using Powershell. The other Identity Provider must be configured beforehand.
-    If ADFS is used as IdP, the Uris parameters can be found at "https://<federationserver>.<domainname>.com/federationmetadata/2007-06/federationmetadata.xml"
+    If ADFS is used as IdP, the Uris parameters can be found at "https://<federationservice>.<domainname>.com/federationmetadata/2007-06/federationmetadata.xml"
   supported_platforms:
   - azure-ad
   input_arguments:
@@ -53,14 +53,15 @@ atomic_tests:
       Connect-AzureAD -Credential $Credential > $null
 
       $federationSettings = New-Object Microsoft.Open.AzureAD.Model.DomainFederationSettings
-      $federationSettings.ActiveLogOnUri="#{active_logon_uri}"
+      $federationSettings.ActiveLogOnUri = "#{active_logon_uri}"
       $federationSettings.IssuerUri = "#{issuer_uri}"
       $federationSettings.LogOffUri = $federationSettings.ActiveLogOnUri
-      $federationSettings.MetadataExchangeUri="#{metadata_uri}"
-      $federationSettings.PassiveLogOnUri=$federationSettings.ActiveLogOnUri
-      $federationSettings.PreferredAuthenticationProtocol="WsFed"
-      $federationSettings.SigningCertificate="#{public_key}"
+      $federationSettings.MetadataExchangeUri = "#{metadata_uri}"
+      $federationSettings.PassiveLogOnUri = $federationSettings.ActiveLogOnUri
+      $federationSettings.PreferredAuthenticationProtocol = "WsFed"
+      $federationSettings.SigningCertificate = "#{public_key}"
       $new = New-AzureADExternalDomainFederation -ExternalDomainName "#{domain_name}" -FederationSettings $federationSettings
       if ($new) { Write-Host "`nFederation successfully added to Azure AD" } else { Write-Host "`nThe federation setup failed" }
     
     name: powershell
+    
